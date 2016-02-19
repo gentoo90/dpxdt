@@ -82,6 +82,8 @@ if (config.httpUserName && config.httpPassword) {
     page.settings.password = config.httpPassword;
 }
 
+page.readyEventOccured = !config.readyEvent;
+
 page.settings.resourceTimeout = config.resourceTimeoutMs || 10000;
 
 
@@ -102,6 +104,9 @@ if (config.resourcesToIgnore) {
 // Echo all console messages from the page to our log.
 page.onConsoleMessage = function(message, line, source) {
     console.log('>> CONSOLE: ' + message);
+    if (config.readyEvent && message === config.readyEvent) {
+        page.readyEventOccured = true;
+    }
 };
 
 
@@ -271,20 +276,20 @@ page.doInject = function() {
         }
     }
 
-    if (!didInject) {
+    if (!didInject && !config.readyEvent) {
         page.doScreenshot();
     } else {
         // Wait for any injected CSS and JS to finish running, including
         // asynchronous requests, then take a screenshot.
         window.setTimeout(function() {
-            page.waitForReady(page.doScreenshot);
+            page.waitForReady(page.doScreenshot, true);
         }, 500);
     }
 };
 
 
 // Wait for all resources on the page to load, then call the given function.
-page.waitForReady = function(func) {
+page.waitForReady = function(func, waitForReadyEvent) {
     var totals = {};
     for (var url in resourceStatusMap) {
         var status = resourceStatusMap[url];
@@ -292,10 +297,12 @@ page.waitForReady = function(func) {
         totals[status] = value + 1;
     }
 
+    var readyEventOccured = !waitForReadyEvent || page.readyEventOccured;
+
     console.log('Status of all resources:', JSON.stringify(totals));
 
     var pending = totals[ResourceStatus.PENDING] || 0;
-    if (!pending) {
+    if (!pending && readyEventOccured) {
         console.log('No more resources are pending!');
         func();
         return;
@@ -305,10 +312,13 @@ page.waitForReady = function(func) {
                 console.log('Still waiting for: ' + url);
             }
         }
+        if (!readyEventOccured) {
+            console.log('Still waiting for readyEvent: ' + config.readyEvent);
+        }
     }
 
     window.setTimeout(function() {
-        page.waitForReady(func);
+        page.waitForReady(func, waitForReadyEvent);
     }, 500);
 };
 
