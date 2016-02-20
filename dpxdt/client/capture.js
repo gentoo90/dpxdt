@@ -237,9 +237,18 @@ page.onLoadFinished = function(status) {
 
 // Takes the screenshot and exits successfully.
 page.doScreenshot = function() {
-    console.log('Taking the screenshot and saving to:', outputPath);
-    page.render(outputPath);
-    phantom.exit(0);
+    if (config.delay) {
+        setTimeout(function() {
+            console.log('Taking the screenshot and saving to:', outputPath);
+            page.render(outputPath);
+            phantom.exit(0);
+        }, config.delay);
+    }
+    else {
+        console.log('Taking the screenshot and saving to:', outputPath);
+        page.render(outputPath);
+        phantom.exit(0);
+    }
 };
 
 
