@@ -306,7 +306,11 @@ page.waitForReady = function(func, waitForReadyEvent) {
         totals[status] = value + 1;
     }
 
-    var readyEventOccured = !waitForReadyEvent || page.readyEventOccured;
+    var readyEventOccured = !waitForReadyEvent ||
+        page.readyEventOccured ||
+        page.evaluate(function(config) {
+            return window.dpxdtReady === true;
+        });
 
     console.log('Status of all resources:', JSON.stringify(totals));
 
