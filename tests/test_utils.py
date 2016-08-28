@@ -48,9 +48,9 @@ def start_server():
         'http://localhost:%d/api/work_queue' % server_port)
     FLAGS.release_server_prefix = 'http://localhost:%d/api' % server_port
 
-    db_path = tempfile.mktemp(suffix='.db')
-    logging.info('sqlite path used in tests: %s', db_path)
-    server.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_path
+    db_path = 'mysql+mysqldb://travis@127.0.0.1/dpxdt_test'
+    logging.info('postgress database used in tests: %s', db_path)
+    server.app.config['SQLALCHEMY_DATABASE_URI'] = db_path
     db.drop_all()
     db.create_all()
 

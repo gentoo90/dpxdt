@@ -1,10 +1,15 @@
 language: python
 sudo: false
+services:
+  - mysql
 python:
   - "2.7"
+cache: pip
 
 install:
   - pip install -r requirements.txt
   - pip install -e .
 
+before_script:
+  - mysql -e 'create database dpxdt_test;'
 script: ./run_tests.sh
