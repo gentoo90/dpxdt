@@ -404,7 +404,10 @@ def report_run():
     build = g.build
     release, run = _get_or_create_run(build)
 
-    db.session.refresh(run, lockmode='update')
+    lockmode = 'update'
+    if db.engine.name == 'postgresql':
+        lockmode = None
+    db.session.refresh(run, lockmode=lockmode)
 
     current_url = request.form.get('url', type=str)
     current_image = request.form.get('image', type=str)
